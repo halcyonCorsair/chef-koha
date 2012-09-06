@@ -16,9 +16,9 @@ template "utf8.cnf" do
 end
 
 mysql_connection_info = {
-  :host => "localhost",
-  :username => 'root',
-  :password => node['mysql']['server_root_password']
+  :host => node['koha']['database']['host'],
+  :username => node['koha']['database']['admin_user'],
+  :password => node['koha']['database']['admin_password']
 }
 
 mysql_database "koha" do
@@ -30,72 +30,70 @@ end
 mysql_database_user "kohaadmin" do
   connection mysql_connection_info
   provider Chef::Provider::Database::MysqlUser
-  password "katikoan"
+  password node['koha']['database']['password']
   action :create
-  database_name "koha"
+  database_name node['koha']['database']['name']
   action :grant
 end
 
-mysql_database_user "" do
-  connection mysql_connection_info
-  action :drop
-end
-
-group "koha" do
+group "#{node['koha']['user']['group']}" do
   gid 3000
   system true
 end
 
-user "koha" do
+user "#{node['koha']['user']['name']}" do
   comment "Koha System User"
-  uid 3000
-  gid "koha"
-  home "/home/koha"
-  shell "/bin/bash"
+  uid node['koha']['user']['uid']
+  gid node['koha']['user']['group']
+  home node['koha']['user']['home']
+  shell node['koha']['user']['shell']
 end
 
-git "/home/vagrant/koha" do
+git "#{node['koha']['install_base']}" do
   action :sync
-  repository "git://git.koha-community.org/koha.git"
-  revision "3.8.x"
-  user "vagrant"
-  group "vagrant"
+  repository node['koha']['repository']
+  revision node['koha']['revision']
+  user node['koha']['code']['user']
+  group node['koha']['code']['group']
   # shallow clone
   #depth 5
 end
 
-execute "setup koha" do
-  command "cd /home/vagrant/koha && perl Makefile.PL"
-  environment ({'WEBSERVER_IP' => '192.168.33.10', 'INSTALL_MODE' => 'dev', 'INSTALL_BASE' => '/home/vagrant/koha', 'PERL_MM_USE_DEFAULT' => '1'})
+execute "configure koha" do
+  command "cd #{node['koha']['install_base']} && perl Makefile.PL"
+  environment ({
+    'WEBSERVER_IP' => node['koha']['webserver']['ip'],
+    'INSTALL_MODE' => node['koha']['install_mode'],
+    'INSTALL_BASE' => node['koha']['install_base'],
+    'PERL_MM_USE_DEFAULT' => '1'
+  })
   action :run
   user "vagrant"
-  cwd "/home/vagrant/koha"
-  not_if {File.exists?("/home/vagrant/koha/Makefile")}
+  cwd "#{node['koha']['install_base']}"
+  not_if {File.exists?("#{node['koha']['install_base']}/Makefile")}
 end
 
 execute "make koha" do
-  command "cd /home/vagrant/koha && make"
-  environment ({'WEBSERVER_IP' => '192.168.33.10'})
+  command "cd #{node['koha']['install_base']} && make"
+  environment ({
+    'WEBSERVER_IP' => node['koha']['webserver']['ip']
+  })
   action :run
   user "vagrant"
-  cwd "/home/vagrant/koha"
-  not_if {File.exists?("/home/vagrant/koha/blib")}
+  cwd "#{node['koha']['install_base']}"
+  not_if {File.exists?("#{node['koha']['install_base']}/blib")}
 end
 
 execute "install koha" do
-  command "cd /home/vagrant/koha && make install"
+  command "cd #{node['koha']['install_base']} && make install"
   user "vagrant"
   action :run
-  cwd "/home/vagrant/koha"
-  not_if {File.exists?("/home/vagrant/koha/bin")}
+  cwd "#{node['koha']['install_base']}"
+  not_if {File.exists?("#{node['koha']['install_base']}/bin")}
 end
 
 link "/etc/apache2/sites-available/koha.conf" do
-  to "/home/vagrant/koha/etc/koha-httpd.conf"
-end
-
-apache_site "000-default" do
-  enable false
+  to "#{node['koha']['install_base']}/etc/koha-httpd.conf"
 end
 
 apache_site "koha.conf" do
@@ -103,10 +101,9 @@ apache_site "koha.conf" do
   notifies :restart, "service[apache2]"
 end
 
-
 # zebra
 link "/etc/init.d/koha-zebra-daemon" do
-  to "/home/vagrant/koha/bin/koha-zebra-ctl.sh"
+  to "#{node['koha']['install_base']}/bin/koha-zebra-ctl.sh"
 end
 
 service "koha-zebra-daemon" do
@@ -115,16 +112,17 @@ service "koha-zebra-daemon" do
 end
 
 cron "zebra_indexer" do
-  command "KOHA_CONF=/home/vagrant/koha/etc/koha-conf.xml /home/vagrant/koha/misc/migration_tools/rebuild_zebra.pl -z -b -a"
+  command "KOHA_CONF=#{node['koha']['install_base']}/etc/koha-conf.xml #{node['koha']['install_base']}/misc/migration_tools/rebuild_zebra.pl -z -b -a"
   user "koha"
   minute "*/10"
 end
 
-# zebra indexer
+# zebra indexing daemon
+#   Do not use when running the cron indexer
 #cpan_module "Koha::Contrib::Tamil"
 
 #template "koha-index-daemon-ctl.sh" do
-#  path "/home/vagrant/koha/bin/koha-index-daemon-ctl.sh"
+#  path "#{node['koha']['install_base']}/bin/koha-index-daemon-ctl.sh"
 #  source "koha-index-daemon-ctl.sh.erb"
 #  owner "vagrant"
 #  mode 0644
