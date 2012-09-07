@@ -21,13 +21,13 @@ mysql_connection_info = {
   :password => node['koha']['database']['admin_password']
 }
 
-mysql_database "koha" do
+mysql_database "#{node['koha']['database']['name']}" do
   connection mysql_connection_info
   provider Chef::Provider::Database::Mysql
   action :create
 end
 
-mysql_database_user "kohaadmin" do
+mysql_database_user "#{node['koha']['database']['user']}" do
   connection mysql_connection_info
   provider Chef::Provider::Database::MysqlUser
   password node['koha']['database']['password']

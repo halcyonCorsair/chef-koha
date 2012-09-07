@@ -29,7 +29,7 @@ default['koha']['database']['port']           = "3306"
 default['koha']['database']['user']           = "kohaadmin"
 default['koha']['database']['password']       = "katikoan"
 default['koha']['database']['admin_user']     = "root"
-default['koha']['database']['admin_password'] = node['mysql']['server_root_password']
+default['koha']['database']['admin_password'] = "password"
 
 default['koha']['webserver']['ip']            = ipaddress
 default['koha']['webserver']['host']          = "localhost"
