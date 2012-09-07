@@ -12,7 +12,7 @@ default['koha']['user']['name']               = "koha"
 default['koha']['user']['group']              = "koha"
 default['koha']['user']['uid']                = "3000"
 default['koha']['user']['gid']                = "3000"
-default['koha']['user']['home']               = "/home/vagrant/koha"
+default['koha']['user']['home']               = "/home/vagrant"
 default['koha']['user']['shell']              = "/bin/bash"
 
 default['koha']['deploy']['user']             = "vagrant"

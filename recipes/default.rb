@@ -68,7 +68,7 @@ execute "configure koha" do
     'PERL_MM_USE_DEFAULT' => '1'
   })
   action :run
-  user "vagrant"
+  user node['koha']['deploy']['user']
   cwd "#{node['koha']['install_base']}"
   not_if {File.exists?("#{node['koha']['install_base']}/Makefile")}
 end
@@ -79,14 +79,14 @@ execute "make koha" do
     'WEBSERVER_IP' => node['koha']['webserver']['ip']
   })
   action :run
-  user "vagrant"
+  user node['koha']['deploy']['user']
   cwd "#{node['koha']['install_base']}"
   not_if {File.exists?("#{node['koha']['install_base']}/blib")}
 end
 
 execute "install koha" do
   command "cd #{node['koha']['install_base']} && make install"
-  user "vagrant"
+  user node['koha']['deploy']['user']
   action :run
   cwd "#{node['koha']['install_base']}"
   not_if {File.exists?("#{node['koha']['install_base']}/bin")}
