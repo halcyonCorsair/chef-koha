@@ -53,8 +53,8 @@ git "#{node['koha']['install_base']}" do
   action :sync
   repository node['koha']['repository']
   revision node['koha']['revision']
-  user node['koha']['code']['user']
-  group node['koha']['code']['group']
+  user node['koha']['deploy']['user']
+  group node['koha']['deploy']['group']
   # shallow clone
   #depth 5
 end
