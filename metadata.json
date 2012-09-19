@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+  },
+  "long_description": "Description\n===========\n\nThis cookbook installs a copy of the Koha library software (http://koha-community.org/) from git.\n\nRequirements\n============\n\n## Cookbooks:\n\n* apache2\n* mysql\n* perl\n\n## Platforms:\n\nCurrently only Ubuntu 12.04 is supported.\n\nAttributes\n==========\n\n* `default['koha']['install_mode']` - Koha install mode: \"dev\", \"standard\" or \"single\"\n* `default['koha']['install_base']` - Where to put the git checkout\n* `default['koha']['user']['name']` - User koha runs as\n* `default['koha']['user']['home']` - Home directory for koha user\n* `default['koha']['repository']` - Defaults to \"git://git.koha-community.org/koha.git\"\n* `default['koha']['revision']` - Defaults to \"3.8.x\"\n* `default['koha']['database']['type']` - mysql or postgres (only mysql supported by this cookbook)\n* `default['koha']['database']['name']` - Name of the koha database\n* `default['koha']['database']['host']` - Hostname of the database server\n* `default['koha']['database']['port']` - Database port\n* `default['koha']['database']['user']` - Database username for koha\n* `default['koha']['database']['password']` - Database password for koha\n* `default['koha']['database']['admin_user']` - Database admin user\n* `default['koha']['database']['admin_password']` - Database admin password\n* `default['koha']['webserver']['ip']` - IP address to serve koha on\n* `default['koha']['webserver']['host']` - Hostname to serve koha on\n* `default['koha']['webserver']['opac_port']` - Port for the OPAC to listen on\n* `default['koha']['webserver']['admin_port']` - Port for the admin interface\n\nUsage\n=====\n\n    {\n      \"koha\": {\n        \"install_base\": \"/home/ubuntu/koha\",\n        \"deploy\": {\n          \"user\": \"ubuntu\",\n          \"group\": \"ubuntu\"\n        },\n        \"user\": {\n          \"home\": \"/home/ubuntu\"\n        }\n      },\n      \"mysql\": {\n         \"server_root_password\": \"password\",\n         \"server_repl_password\": \"password\",\n         \"server_debian_password\": \"password\"\n      },\n      \"apache\": {\n        \"listen_ports\": [\n          \"80\", \"8080\"\n        ]\n      },\n      \"run_list\": [\n        \"recipe[apache2]\",\n        \"recipe[apache2::mod_rewrite]\",\n        \"recipe[apache2::mod_headers]\",\n        \"recipe[apache2::mod_deflate]\",\n        \"recipe[perl]\",\n        \"recipe[mysql::client]\",\n        \"recipe[mysql::server]\",\n        \"recipe[koha::requirements]\",\n        \"recipe[koha]\"\n      ]\n    }\n",
+  "recipes": {
+  },
+  "groupings": {
+  },
+  "recommendations": {
+  },
+  "providing": {
+  },
+  "maintainer": "Elliot Pahl",
+  "suggestions": {
+  },
+  "platforms": {
+    "ubuntu": ">= 12.04"
+  },
+  "maintainer_email": "elliot.pahl@gmail.com",
+  "description": "Installs/Configures koha",
+  "replacing": {
+  },
+  "conflicting": {
+  },
+  "version": "0.0.1",
+  "name": "koha",
+  "license": "GPL v3",
+  "attributes": {
+  }
+}
