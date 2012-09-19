@@ -24,7 +24,7 @@ default['koha']['revision']                   = "3.8.x"
 
 default['koha']['database']['type']           = "mysql"
 default['koha']['database']['name']           = "koha"
-default['koha']['database']['host']           = "localhost"
+default['koha']['database']['host']           = "127.0.0.1"
 default['koha']['database']['port']           = "3306"
 default['koha']['database']['user']           = "kohaadmin"
 default['koha']['database']['password']       = "katikoan"
