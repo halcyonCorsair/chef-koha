@@ -39,6 +39,7 @@ t.run_action(:run)
 unless system("apt-key list | grep A99CEB6D")
   execute "install-key A99CEB6D" do
     command "apt-key adv --keyserver keys.gnupg.net --recv A99CEB6D"
+    command "wget -O- http://debian.koha-community.org/koha/gpg.asc | sudo apt-key add -"
     action :nothing
   end.run_action(:run)
 end
