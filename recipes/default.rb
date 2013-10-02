@@ -15,26 +15,34 @@ template "utf8.cnf" do
   notifies :restart, "service[mysql]"
 end
 
-mysql_connection_info = {
-  :host => node['koha']['database']['host'],
-  :username => node['koha']['database']['admin_user'],
-  :password => node['koha']['database']['admin_password']
-}
 
-mysql_database "#{node['koha']['database']['name']}" do
-  connection mysql_connection_info
-  provider Chef::Provider::Database::Mysql
-  action :create
+execute "#{node['koha']['database']['name']} database" do
+  command "/usr/bin/mysqladmin -h #{node['koha']['database']['host']} -u #{node['koha']['database']['admin_user']} -p#{node['koha']['database']['admin_password']} create #{node['koha']['database']['name']}"
+  not_if "mysql -h #{node['koha']['database']['host']} -u root -p#{node['mysql']['server_root_password']} --silent --skip-column-names --execute=\"show databases like '#{node['koha']['database']['name']}'\" | grep #{node['koha']['database']['name']}"
+
 end
 
-mysql_database_user "#{node['koha']['database']['user']}" do
-  connection mysql_connection_info
-  provider Chef::Provider::Database::MysqlUser
-  password node['koha']['database']['password']
-  action :create
-  database_name node['koha']['database']['name']
-  action :grant
+execute "mysql-install-koha-privileges" do
+  command "/usr/bin/mysql -h #{node['koha']['database']['host']} -u #{node['koha']['database']['admin_user']}  -p#{node['koha']['database']['admin_password']} < /etc/mysql/koha-grants.sql"
+  action :nothing
 end
+
+template "/etc/mysql/koha-grants.sql" do
+  path "/etc/mysql/koha-grants.sql"
+  source "grants.sql.erb"
+  owner "root"
+  group "root"
+  mode "0600"
+  variables(
+    :user     => node['koha']['database']['user'],
+    :password => node['koha']['database']['password'],
+    :database => node['koha']['database']['name'],
+    :host => node['koha']['database']['host']
+  )
+  notifies :run, "execute[mysql-install-koha-privileges]", :immediately
+end
+
+
 
 group "#{node['koha']['user']['group']}" do
   gid 3000
@@ -47,6 +55,7 @@ user "#{node['koha']['user']['name']}" do
   gid node['koha']['user']['group']
   home node['koha']['user']['home']
   shell node['koha']['user']['shell']
+  supports :manage_home => true
 end
 
 git "#{node['koha']['install_base']}" do
